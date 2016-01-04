@@ -70,42 +70,25 @@ message("-- Default Install prefix: ${CMAKE_INSTALL_PREFIX}")
 option(STATX_WITH_CERES "Enables GEV parameter estimation using Ceres" ON)
 
 # Eigen
-find_package(Eigen REQUIRED)
-if (EIGEN_FOUND)
-  message("-- Found Eigen version ${EIGEN_VERSION}: ${EIGEN_INCLUDE_DIRS}")
-endif (EIGEN_FOUND)
-include_directories(${EIGEN_INCLUDE_DIRS})
 
-# Google Flags
-find_package(Gflags REQUIRED)
-if(GFLAGS_FOUND)
-include_directories(${GFLAGS_INCLUDE_DIRS})
-endif(GFLAGS_FOUND)
+# # Google ceres-solver
+# if(STATX_WITH_CERES)
+#   # Check for CERES
+#   message("-- Check for Google ceres-solver")
+#   find_package(Ceres REQUIRED)
+#   if (CERES_FOUND)
+#     message("-- Found Ceres headers in: ${CERES_INCLUDE_DIRS}")
+#     include_directories(${CERES_INCLUDE_DIR})
+#   else (CERES_FOUND)
+#     message(FATAL_ERROR "Could not find Ceres. Please set CERES_INCLUDE_DIRS and CERES_LIBRARIES")
+#   endif(CERES_FOUND)
 
-# Google Logging
-find_package(Glog REQUIRED)
-if(GLOG_FOUND)
-include_directories(${GLOG_INCLUDE_DIRS})
-endif(GLOG_FOUND)
+#   # BLAS
+#   find_package(BLAS REQUIRED)
 
-# Google ceres-solver
-if(STATX_WITH_CERES)
-  # Check for CERES
-  message("-- Check for Google ceres-solver")
-  find_package(Ceres REQUIRED)
-  if (CERES_FOUND)
-    message("-- Found Ceres headers in: ${CERES_INCLUDE_DIRS}")
-    include_directories(${CERES_INCLUDE_DIR})
-  else (CERES_FOUND)
-    message(FATAL_ERROR "Could not find Ceres. Please set CERES_INCLUDE_DIRS and CERES_LIBRARIES")
-  endif(CERES_FOUND)
-
-  # BLAS
-  find_package(BLAS REQUIRED)
-
-  # LAPACK
-  find_package(LAPACK REQUIRED)
-endif(STATX_WITH_CERES)
+#   # LAPACK
+#   find_package(LAPACK REQUIRED)
+# endif(STATX_WITH_CERES)
 
 # Find and include optimo headers
 message("-- Check for Optimo")

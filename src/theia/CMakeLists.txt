@@ -156,7 +156,7 @@ set(THEIA_SRC
 
 set(THEIA_LIBRARY_DEPENDENCIES
   ${CERES_LIBRARIES}
-  ${GFLAGS_LIBRARIES}
+#  ${GFLAGS_LIBRARIES}
   ${GLOG_LIBRARIES}
   ${CIMG_LIBRARIES}
   easyexif
@@ -174,7 +174,7 @@ set_target_properties(theia PROPERTIES
   SOVERSION ${THEIA_VERSION_MAJOR}
   )
 target_link_libraries(theia ${THEIA_LIBRARY_DEPENDENCIES})
-
+add_dependencies(theia gflags)
 install(TARGETS theia
   EXPORT  TheiaExport
   RUNTIME DESTINATION bin

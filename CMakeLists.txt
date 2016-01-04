@@ -48,12 +48,12 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 # Set up the git hook to make Gerrit Change-Id: lines in commit messages.
 set (LOCAL_GIT_DIRECTORY)
-if (EXISTS ${CMAKE_SOURCE_DIR}/.git)
+if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/.git)
   # .git directory can be found on Unix based system, or on Windows with
   # Git Bash (shipped with msysgit)
-  set (LOCAL_GIT_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-else (EXISTS ${CMAKE_SOURCE_DIR}/.git)
-endif (EXISTS ${CMAKE_SOURCE_DIR}/.git)
+  set (LOCAL_GIT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/.git)
+else (EXISTS ${CMAKE_CURRENT_LIST_DIR}/.git)
+endif (EXISTS ${CMAKE_CURRENT_LIST_DIR}/.git)
 
 if (EXISTS ${LOCAL_GIT_DIRECTORY})
   if (NOT EXISTS ${LOCAL_GIT_DIRECTORY}/hooks/commit-msg)
@@ -75,14 +75,14 @@ endif (EXISTS ${LOCAL_GIT_DIRECTORY})
 # ==============================================================================
 # Additional cmake find modules
 # ==============================================================================
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 option(BUILD_TESTING "Enable testing" ON)
 option(BUILD_DOCUMENTATION "Build html User's Guide" OFF)
 
 enable_testing()
 add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
-set(GTEST_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libraries/gtest")
+set(GTEST_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/libraries/gtest")
 add_definitions(-DGTEST_TESTING_OUTPUT_DIRECTORY="${CMAKE_BINARY_DIR}/testing_output")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -99,14 +99,10 @@ set(THEIA_VERSION
 set(THEIA_ABI_VERSION 0.5.0)
 
 # THEIA data directory
-add_definitions(-DTHEIA_DATA_DIR="${CMAKE_SOURCE_DIR}/data")
+add_definitions(-DTHEIA_DATA_DIR="${CMAKE_CURRENT_LIST_DIR}/data")
 
 # Eigen
 set(MIN_EIGEN_VERSION 3.2.0)
-find_package(Eigen ${MIN_EIGEN_VERSION} REQUIRED)
-if (EIGEN_FOUND)
-  message("-- Found Eigen version ${EIGEN_VERSION}: ${EIGEN_INCLUDE_DIRS}")
-endif (EIGEN_FOUND)
 
 # Use a larger inlining threshold for Clang, since it hobbles Eigen,
 # resulting in an unreasonably slow version of the blas routines. The
@@ -125,35 +121,18 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   endif(HAVE_RETURN_TYPE_C_LINKAGE)
 endif ()
 
-# GFlags. The namespace patch is borrow from Ceres Solver (see license in
-# FindGflags.cmake)
-find_package(Gflags REQUIRED)
-if (GFLAGS_FOUND)
-  message("-- Found Google Flags: ${GFLAGS_INCLUDE_DIRS} in namespace: ${GFLAGS_NAMESPACE}")
-  add_definitions(-DTHEIA_GFLAGS_NAMESPACE=${GFLAGS_NAMESPACE})
-else (GFLAGS_FOUND)
-  message(FATAL_ERROR "Can't find Google FLAGS.")
-endif (GFLAGS_FOUND)
-
-# Google Logging
-message("-- Check for Google Log")
-find_package(Glog REQUIRED)
-if (GLOG_FOUND)
-  message("-- Found Google Logging: ${GLOG_INCLUDE_DIRS}")
-else (GLOG_FOUND)
-  message(FATAL_ERROR "Can't find Google Logging. Please set GLOG_INCLUDE_DIR & "
-    "GLOG_LIBRARY")
-endif (GLOG_FOUND)
-
-# Ceres
-message("-- Check for Ceres")
-find_package(Ceres REQUIRED)
-if (CERES_FOUND)
-  message("-- Found Ceres: ${CERES_INCLUDE_DIRS}")
-else (CERES_FOUND)
-  message(FATAL_ERROR "Can't find Ceres. Please set CERES_INCLUDE_DIR & "
-    "CERES_LIBRARY")
-endif (CERES_FOUND)
+add_definitions(-DTHEIA_GFLAGS_NAMESPACE=gflags)
+set(GFLAGS_LIBRARIES gflags-static)
+set(GLOG_LIBRARY glog)
+# # Ceres
+# message("-- Check for Ceres")
+# find_package(Ceres REQUIRED)
+# if (CERES_FOUND)
+#   message("-- Found Ceres: ${CERES_INCLUDE_DIRS}")
+# else (CERES_FOUND)
+#   message(FATAL_ERROR "Can't find Ceres. Please set CERES_INCLUDE_DIR & "
+#     "CERES_LIBRARY")
+# endif (CERES_FOUND)
 
 include_directories(
   include
@@ -191,9 +170,10 @@ include_directories(
   ${optimo_SOURCE_DIR}
   ${statx_SOURCE_DIR}
   ${stlplus3_SOURCE_DIR}
-  ${vlfeat_SOURCE_DIR})
+  #${vlfeat_SOURCE_DIR}
+  )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(OptimizeTheiaCompilerFlags)
 optimizetheiacompilerflags()
 
@@ -210,20 +190,20 @@ endif (BUILD_DOCUMENTATION)
 
 # ---------------- Install commands ----------------- #
 # Install the .h files
-file(GLOB THEIA_HDRS ${CMAKE_SOURCE_DIR}/include/theia/*.h)
+file(GLOB THEIA_HDRS ${CMAKE_CURRENT_LIST_DIR}/include/theia/*.h)
 install(FILES ${THEIA_HDRS} DESTINATION include/theia)
 
-file(GLOB_RECURSE THEIA_INTERNAL_HDRS ${CMAKE_SOURCE_DIR}/src/theia/*.h)
+file(GLOB_RECURSE THEIA_INTERNAL_HDRS ${CMAKE_CURRENT_LIST_DIR}/src/theia/*.h)
 install(DIRECTORY src/theia/ DESTINATION include/theia FILES_MATCHING PATTERN "*.h")
 
 install(DIRECTORY libraries/ DESTINATION include/theia/libraries FILES_MATCHING PATTERN "*.h*")
 
 # Add an uninstall target to remove all installed files.
-configure_file("${CMAKE_SOURCE_DIR}/cmake/uninstall.cmake.in"
+configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/uninstall.cmake.in"
                "${CMAKE_BINARY_DIR}/cmake/uninstall.cmake"
                IMMEDIATE @ONLY)
 
-add_custom_target(uninstall
+add_custom_target(uninstall_theia
                   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake/uninstall.cmake)
 
 # Set up install directories. INCLUDE_INSTALL_DIR, LIB_INSTALL_DIR and
@@ -247,8 +227,8 @@ endif ()
 # in the export set, so when loaded later on CMake will create "imported"
 # library targets from these, which can be used in many ways in the same way
 # as a normal library target created via a normal ADD_LIBRARY().
-install(EXPORT TheiaExport
-        DESTINATION ${RELATIVE_CMAKECONFIG_INSTALL_DIR} FILE TheiaTargets.cmake)
+#install(EXPORT TheiaExport
+#        DESTINATION ${RELATIVE_CMAKECONFIG_INSTALL_DIR} FILE TheiaTargets.cmake)
 
 # Figure out the relative path from the installed Config.cmake file to the
 # install prefix (which may be at runtime different from the chosen
@@ -260,14 +240,14 @@ file(RELATIVE_PATH INSTALL_ROOT_REL_CONFIG_INSTALL_DIR
 # Create a TheiaConfig.cmake file. <name>Config.cmake files are searched by
 # FIND_PACKAGE() automatically. We configure that file so that we can put any
 # information we want in it, e.g. version numbers, include directories, etc.
-configure_file("${CMAKE_SOURCE_DIR}/cmake/TheiaConfig.cmake.in"
+configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/TheiaConfig.cmake.in"
                "${CMAKE_CURRENT_BINARY_DIR}/TheiaConfig.cmake" @ONLY)
 
 # Additionally, when CMake has found a TheiaConfig.cmake, it can check for a
 # TheiaConfigVersion.cmake in the same directory when figuring out the version
 # of the package when a version has been specified in the FIND_PACKAGE() call,
 # e.g. FIND_PACKAGE(Theia [0.5.2] REQUIRED). The version argument is optional.
-configure_file("${CMAKE_SOURCE_DIR}/cmake/TheiaConfigVersion.cmake.in"
+configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake/TheiaConfigVersion.cmake.in"
                "${CMAKE_CURRENT_BINARY_DIR}/TheiaConfigVersion.cmake" @ONLY)
 
 # Install these files into the same directory as the generated exports-file,
@@ -275,7 +255,7 @@ configure_file("${CMAKE_SOURCE_DIR}/cmake/TheiaConfigVersion.cmake.in"
 # in the public API of Theia and should thus be present in THEIA_INCLUDE_DIRS.
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/TheiaConfig.cmake"
               "${CMAKE_CURRENT_BINARY_DIR}/TheiaConfigVersion.cmake"
-              "${CMAKE_SOURCE_DIR}/cmake/FindEigen.cmake"
-              "${CMAKE_SOURCE_DIR}/cmake/FindGlog.cmake"
-              "${CMAKE_SOURCE_DIR}/cmake/FindGflags.cmake"
+              "${CMAKE_CURRENT_LIST_DIR}/cmake/FindEigen.cmake"
+              "${CMAKE_CURRENT_LIST_DIR}/cmake/FindGlog.cmake"
+              "${CMAKE_CURRENT_LIST_DIR}/cmake/FindGflags.cmake"
               DESTINATION ${CMAKECONFIG_INSTALL_DIR})
